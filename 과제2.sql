@@ -49,13 +49,6 @@ SELECT STUDNO 학번, NAME 이름,DECODE(DEPTNO1,
 FROM STUDENT S JOIN DEPARTMENT D ON (S.DEPTNO1 = D.DEPTNO)
 ;
 
-SELECT * FROM EMP;
-SELECT * FROM EMP2;
-SELECT * FROM DEPT;
-SELECT * FROM DEPT2;
-SELECT * FROM STUDENT;
-SELECT * FROM PROFESSOR;
-
 --8번)dept2와 emp2 테이블을 조인하여 사원명, 부서명, 연락처, 급여를 출력하라.
 SELECT E.NAME 사원명,D.DNAME 부서명,E.TEL 연락처,E.PAY 급여
 FROM DEPT2 D JOIN EMP2 E ON (D.DCODE = E.DEPTNO);
@@ -64,17 +57,34 @@ FROM DEPT2 D JOIN EMP2 E ON (D.DCODE = E.DEPTNO);
 SELECT D2.DCODE,D2.DNAME,D2.AREA,D1.DNAME
 FROM DEPT2 D1 JOIN DEPT2 D2 ON (D1.DCODE = D2.PDEPT);
 
---10번) emp2와 dept2 테이블을 사용하여 부서번호, 부서명, 사원명, 상사이름을 출력하라
+--10번) emp2와 dept2 테이블을 사용하여 부서번호, 부서명, 사원명, 상사이름을 출력하라(X)
 SELECT E2.DEPTNO 부서번호,DNAME 부서명 ,E2.NAME 사원명 ,E1.NAME 상사이름
-FROM EMP2 E1 JOIN EMP2 E2 ON (E1.EMPNO = E2.PEMPNO) JOIN DEPT2 D ON (E1.DEPTNO = D.PDEPT);
+FROM EMP2 E1 JOIN EMP2 E2 ON (E1.EMPNO = E2.PEMPNO) 
+     JOIN DEPT2 D ON (E1.DEPTNO = D.DCODE);
+
 --11번)emp2와 dept2 테이블을 사용하여 전체급여의 평균보다 낮은 사람의 이름과 부서명, 급여를 부서명순으로 
 --    오름 차순으로 정렬하여 출력하라.
+select e.name 이름,d.dname 부서명,e.pay 급여
+from emp2 e join dept2 d on(e.deptno = d.dcode)
+where pay >(select avg(pay) from emp2)
+order by dname;
 
 --12번)emp2와 dept2 테이블을 사용하여 부서명별 급여가 가장 높은 사람의 이름과 부서명, 급여를 출력하라.
+select e.name 이름,d.dname 부서명,e.pay 급여
+from emp2 e join dept2 d on(e.deptno = d.dcode)
+where(deptno,pay)in(select deptno,max(pay)from emp2 group by deptno);
 
 --13번)emp2와 dept2 테이블을 사용하여 이름, 생일, 부서명(스칼라 subquery 이용)을 출력하라
-
---14번)emp2 테이블에서 emp_type이 permanent employee인 사람 중 최고 급여를 받은 사람보다 적은급여를 받는 사람의 이름과
---     emp_type 급여(pay)를 출력하라.
+select e.name,e.birthday,(select dname from dept2 d where d.dcode=e.deptno) 부서명
+from emp2 e;
+ 
+--14번)emp2 테이블에서 emp_type이 permanent employee인 사람 중 최고 급여를 받은 사람보다 적은급여를 받는 사람의 
+--    이름과 emp_type 급여(pay)를 출력하라.
+select name 이름,emp_type,pay 급여
+from emp2
+where emp_type = 'Permanent employee' and pay < (select max(pay)from emp2 where emp_type='Permanent employee');
 
 --15번)emp 테이블에서 comm이 없는 사람의 정보(inline view), dept 테이블을 조인하여 empno, ename,dname, sal을 출력하라.
+select empno,dname,sal
+from (select * from emp where comm is not null) e,dept d
+where e.deptno = d.deptno;
