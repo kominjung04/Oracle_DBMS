@@ -4,6 +4,8 @@ SELECT * FROM DEPT;
 SELECT * FROM DEPT2;
 SELECT * FROM STUDENT;
 SELECT * FROM PROFESSOR;
+select * from hakjum;
+select * from score;
 --1번)emp 테이블을 이용하여 직책(job)별로 그룹화하여 직책(job), 평균급여(avg_sal), 최고급여(max_sal),
 --최저 급여(min_sal), 사원수(count)를 구하시오. 단 평균 급여는 소수점을 제외하고 출력하라.
 SELECT JOB 직책,ROUND(AVG(SAL)) 평균급여,MAX(SAL) 최고급여,MIN(SAL) 최저급여,COUNT(*) 사원수
