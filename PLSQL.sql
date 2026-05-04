@@ -49,7 +49,20 @@ WHERE NO = V_NO;
 END;
 /
 
+DECLARE
+    v_emp EMP%ROWTYPE;
+BEGIN
+    SELECT *
+    INTO v_emp
+    FROM EMP
+    WHERE EMPNO = 7369;
 
+    v_emp.SAL := v_emp.SAL * 1.1;
+
+    DBMS_OUTPUT.PUT_LINE('이름: ' || v_emp.ENAME);
+    DBMS_OUTPUT.PUT_LINE('인상급여: ' || v_emp.SAL);
+END;
+/
 
 DECLARE
     V_NAME T_PLSQL.NAME%TYPE:='&NAME';
@@ -262,6 +275,55 @@ BEGIN
     DBMS_OUTPUT.PUT_LINE(V_RECORD.V_NO||' '||V_RECORD.V_NAME||' '||V_RECORD.V_SAL);
 END;
 /
+select * from student;
+
+--학생테이블에서 학생 이름, 키, 몸무게를 출력하는 plsql을 변수의 type을 recorde + table으로 작성해라
+DECLARE
+    TYPE V_STUD_REC IS RECORD(
+        V_STUNO   STUDENT.STUDNO%TYPE,
+        V_NAME    STUDENT.NAME%TYPE,
+        V_HEIGHT  STUDENT.HEIGHT%TYPE,
+        V_WEIGHT  STUDENT.WEIGHT%TYPE
+    );
+
+    TYPE V_STUD_TAB IS TABLE OF V_STUD_REC INDEX BY PLS_INTEGER;
+
+    V_RECORD   V_STUD_REC;
+    V_STUD_TAB V_STUD_TAB;
+    i          PLS_INTEGER := 0;
+BEGIN
+    -- 단일 학생 조회
+    SELECT STUDNO, NAME, HEIGHT, WEIGHT
+    INTO V_RECORD.V_STUNO, V_RECORD.V_NAME, V_RECORD.V_HEIGHT, V_RECORD.V_WEIGHT
+    FROM STUDENT
+    WHERE STUDNO = &STUDNO;
+
+    DBMS_OUTPUT.PUT_LINE('단일 조회: ' ||
+        V_RECORD.V_STUNO || ' ' ||
+        V_RECORD.V_NAME || ' ' ||
+        V_RECORD.V_HEIGHT || ' ' ||
+        V_RECORD.V_WEIGHT);
+
+    -- 전체 학생 조회 후 배열에 저장
+    FOR STUD_ROW IN (SELECT STUDNO, NAME, HEIGHT, WEIGHT FROM STUDENT) LOOP
+        i := i + 1;
+        V_STUD_TAB(i).V_STUNO  := STUD_ROW.STUDNO;
+        V_STUD_TAB(i).V_NAME   := STUD_ROW.NAME;
+        V_STUD_TAB(i).V_HEIGHT := STUD_ROW.HEIGHT;
+        V_STUD_TAB(i).V_WEIGHT := STUD_ROW.WEIGHT;
+    END LOOP;
+
+    -- 배열 출력
+    FOR j IN 1 .. i LOOP
+        DBMS_OUTPUT.PUT_LINE(
+            V_STUD_TAB(j).V_STUNO || ' ' ||
+            V_STUD_TAB(j).V_NAME || ' ' ||
+            V_STUD_TAB(j).V_HEIGHT || ' ' ||
+            V_STUD_TAB(j).V_WEIGHT
+        );
+    END LOOP;
+END;
+/
 
 --TABLE TYPE변수
 DECLARE
@@ -295,4 +357,80 @@ BEGIN
 END;
 /
 
+--조건 제어문 (IF-THEN-ELSE)
+DECLARE
+    v_ename EMP.ENAME%TYPE;
+    v_sal EMP.SAL%TYPE;
+BEGIN
+    SELECT ENAME, SAL
+    INTO v_ename, v_sal
+    FROM EMP
+    WHERE EMPNO = &EMPNO;
+IF v_sal>= 3000 THEN
+    DBMS_OUTPUT.PUT_LINE(v_ename|| ' : 고급여');
+ELSE
+    DBMS_OUTPUT.PUT_LINE(v_ename|| ' : 일반급여');
+END IF;
+END;
+--CASE문
+DECLARE
+    v_ename EMP.ENAME%TYPE;
+    v_sal EMP.SAL%TYPE;
+    v_tax NUMBER;
+BEGIN
+    SELECT ENAME, SAL
+    INTO v_ename, v_sal
+    FROM EMP
+    WHERE EMPNO = &empno;
+CASE
+    WHEN v_sal>= 3000 THEN v_tax:= v_sal* 0.2;   
+    WHEN v_sal>= 2000 THEN v_tax:= v_sal* 0.15; 
+    WHEN v_sal>= 1000 THEN v_tax:= v_sal* 0.1;   
+    ELSE v_tax:= v_sal* 0.05;                    
+END CASE;
+    DBMS_OUTPUT.PUT_LINE('사원명: ' || v_ename);
+    DBMS_OUTPUT.PUT_LINE('급여: ' || v_sal);
+    DBMS_OUTPUT.PUT_LINE('세금: ' || v_tax);
+END;
+/
 
+-- 반복제어문(LOOP)
+DECLARE
+    v_empno NUMBER := 7369;
+    v_cnt NUMBER;
+BEGIN
+    LOOP
+        SELECT COUNT(*)
+        INTO v_cnt
+        FROM EMP
+        WHERE EMPNO = v_empno;
+        IF v_cnt> 0 THEN
+        DBMS_OUTPUT.PUT_LINE(v_empno|| ' : 존재');
+        ELSE
+        DBMS_OUTPUT.PUT_LINE(v_empno|| ' : 없음');
+        END IF;
+        v_empno:= v_empno+ 1;
+        EXIT WHEN v_empno> 7373;
+     END LOOP;
+END;
+/
+--WHILE LOOP
+DECLARE
+        v_empno NUMBER := 7369;
+        v_cnt NUMBER;
+    BEGIN
+    WHILE v_empno<= 7373 LOOP
+        SELECT COUNT(*)
+        INTO v_cnt
+        FROM EMP
+        WHERE EMPNO = v_empno;
+        IF v_cnt> 0 THEN
+        DBMS_OUTPUT.PUT_LINE(v_empno|| ' : 존재');
+        ELSE
+        DBMS_OUTPUT.PUT_LINE(v_empno|| ' : 없음');
+        END IF;
+        v_empno:= v_empno+ 1;
+    END LOOP;
+END;
+
+--CONTINUE WHEN
